@@ -4,12 +4,21 @@
 
 Open NavG is a free, open-source **Connect IQ data field** that adds route navigation to watches without maps, starting with the **Garmin Venu 2**. It runs inside the normal Run / Bike activity, so all of Garmin's own recording keeps working.
 
+## Why this exists
+Many Garmin watches, especially older or lifestyle models like the Venu 2, have **no course navigation at all**, and even cheaper current models only give a line to follow without telling you how to get back. Real turn guidance with maps and rerouting is reserved for watches that cost two to three times more. Open NavG gives a watch you already own:
+- turn arrows with distance and one vibration before each turn,
+- an off-route alert **with a line showing the way back**,
+- a mode for **riding a motorbike** that avoids toll roads,
+- route loading that works with an **iPhone**, not only Android.
+
+No new watch, no subscription, no paid app.
+
 - Next-turn arrow with distance and a yellow countdown bar (full = turn now)
 - **One** vibration about 20 m before each turn
 - Off-route alert with a red line back to the route — explore side streets and always know the way back (explore mode turns the vibration off)
 - Simple route line drawn in code on a black screen (light on the AMOLED battery), no map tiles
 - 5 saved routes on the watch, choose by tapping the screen — no phone or internet needed once saved
-- Run, bike, or motorbike (avoids toll roads)
+- Running, cycling, or riding a motorbike (avoids toll roads)
 - Community routes (GPX) and your own drawings via the **Open NavG Planner**
 - English and Bahasa Indonesia, following the watch/phone language
 
@@ -25,6 +34,23 @@ Open NavG is a free, open-source **Connect IQ data field** that adds route navig
 | `NAVG1V:…` via points | Your own drawing (e.g. Strava art), snapped to real roads | Once, to fetch |
 
 The **[Planner](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)** (`docs/planner/`) turns a GPX file or points tapped on a map into a code you paste into the settings.
+
+## Other watches and other brands
+**More Garmin watches.** Only the Venu 2 is built and tested today. Most of the code does not depend on the screen, so adding another Connect IQ watch is mostly adding it to `manifest.xml`, checking the layout in the simulator and testing outdoors. Pull requests for older or map-less Garmin models are very welcome.
+
+**Other brands (Huawei, Amazfit, Wear OS, …).** The interesting parts are plain algorithms that can be ported to any watch platform (MIT licence, so commercial or personal forks are fine):
+
+| Part | File | What it does |
+|---|---|---|
+| Route code | `source/RouteCode.mc`, `source/Polyline.mc` | `NAVG1L:` / `NAVG1V:` + Google polyline (precision 5): a short text that carries a whole route |
+| Simplify | `source/Simplifier.mc` | Douglas–Peucker that runs in small steps (for slow watches with a watchdog) |
+| Turn detection | `source/Route.mc` | Finds left/right/U-turns from the route's shape alone — no turn list needed from the server |
+| Guidance | `source/Navigator.mc` | Snaps GPS to the route, next turn + distance, off-route with hysteresis, rejoin point ahead, arrival |
+| Routing | `source/RouteFetcher.mc` | Free Valhalla / OSRM requests (foot, bike, riding a motorbike without tolls) |
+| Planner | `docs/planner/` | Web page (no build, no server) that makes route codes from GPX or a drawn line — reusable as-is by any watch app |
+| Screens | `source/OpenNavGView.mc`, `source/Draw.mc` | Everything drawn in code; use as a reference design |
+
+The unit tests in `source/test/` describe the expected behaviour and make good test cases for a port.
 
 ## Build
 Requirements: Java 17+, [Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) with the Venu 2 device, a developer key.
@@ -46,12 +72,16 @@ MIT — see [LICENSE](LICENSE).
 
 Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahkan navigasi rute ke jam tanpa peta, dimulai dari **Garmin Venu 2**. Berjalan di dalam aktivitas Run/Bike biasa, jadi semua perekaman bawaan Garmin tetap jalan.
 
+**Kenapa dibuat:** banyak jam Garmin, terutama seri lama atau seri gaya hidup seperti Venu 2, **sama sekali tidak punya navigasi rute**. Seri yang lebih murah pun umumnya hanya memberi garis tanpa petunjuk jalan kembali. Navigasi lengkap dengan peta dan rute ulang hanya ada di jam yang harganya dua sampai tiga kali lipat. Open NavG memberi jam yang sudah Anda punya: panah belokan dengan jarak, satu getar sebelum belok, garis untuk kembali ke rute, mode riding motorbike tanpa tol, dan bisa diisi rute dari **iPhone**. Tanpa beli jam baru dan tanpa langganan.
+
+**Untuk jam lain dan merek lain:** saat ini baru Venu 2 yang dibangun dan diuji. Jam Garmin lain bisa ditambahkan lewat `manifest.xml` lalu diuji, dan kontribusi sangat diterima. Bagian intinya berupa algoritma biasa yang bisa dipindahkan ke platform jam lain seperti Huawei, Amazfit, atau Wear OS: kode rute, penyederhanaan, deteksi belokan dari bentuk rute, navigator keluar/kembali jalur, dan Perencana web. Lisensinya MIT. Detail file ada di bagian *Other watches and other brands* di atas.
+
 - Panah belokan berikutnya + jarak + bar kuning hitung mundur (penuh = belok sekarang)
 - **Satu** getar sekitar 20 m sebelum belok
 - Peringatan keluar jalur dengan garis merah ke rute — bebas masuk gang tapi selalu tahu jalan balik (mode jelajah mematikan getarnya)
 - Garis rute sederhana digambar dengan kode di latar hitam (hemat baterai AMOLED), tanpa peta
 - 5 rute tersimpan di jam, pilih dengan tap layar — tanpa HP/internet setelah tersimpan
-- Lari, sepeda, atau motor (menghindari tol)
+- Lari, sepeda, atau riding motorbike (menghindari tol)
 - Rute komunitas (GPX) dan gambar sendiri lewat **[Perencana Open NavG](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)**
 - Bahasa Inggris dan Indonesia, mengikuti bahasa jam/HP
 

@@ -17,3 +17,7 @@ release/
 
 # Local tooling
 .claude/
+
+# Uses Garmin's own Venu 2 product image from the SDK: keep local, don't publish
+docs/store/framed.html
+docs/store/open-navg-framed.png
