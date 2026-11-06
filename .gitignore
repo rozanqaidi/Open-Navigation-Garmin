@@ -25,3 +25,6 @@ docs/store/open-navg-framed.png
 # Garmin font data built from the local Connect IQ SDK by docs/store/make_fonts.py: never commit
 docs/store/fonts.js
 docs/store/venu2font/
+
+# The owner's private plan: kept locally, never published
+PLAN.md

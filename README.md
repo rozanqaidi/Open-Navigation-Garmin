@@ -33,6 +33,8 @@ No new watch, no subscription, no paid app.
 2. The watch asks a free routing server (Valhalla or OSRM, OpenStreetMap data) for the route through the phone, simplifies it and saves it to a slot. Right after, it downloads the streets around the route from the same Valhalla server (about 1 minute for 10 km, a few minutes for a marathon: keep the phone close with Garmin Connect open).
 3. All guidance — turns, off-route, arrival — is computed on the watch from the route's shape, using the watch's own GPS.
 
+Version history: [CHANGELOG.md](CHANGELOG.md).
+
 ### Route codes
 | Code | Use | Watch needs internet? |
 |---|---|---|
@@ -100,4 +102,9 @@ Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahk
 - Rute komunitas (GPX) dan gambar sendiri lewat **[Perencana Open NavG](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)**
 - Bahasa Inggris dan Indonesia, mengikuti bahasa jam/HP
 
-Cara pakai lengkap ada di [PLAN.md](PLAN.md).
+### Cara pakai
+1. Pengaturan di HP (aplikasi Connect IQ → Open NavG → Settings): isi tujuan (koordinat atau link Google Maps) **atau** kode rute dari Perencana, plus nama rute.
+2. Jam meminta rute ke server routing gratis (Valhalla atau OSRM, data OpenStreetMap) lewat HP, menyederhanakannya, lalu menyimpannya ke slot. Setelah itu jam mengunduh jalan di sekitar rute (sekitar 1 menit untuk 10 km, beberapa menit untuk marathon: dekatkan HP dengan Garmin Connect terbuka).
+3. Semua panduan (belokan, keluar jalur, sampai) dihitung di jam dari bentuk rute, memakai GPS jam sendiri.
+
+Taruh layar Open NavG sebagai halaman data **terakhir** di aktivitas Run/Bike, supaya halaman awal tetap bawaan Garmin. Riwayat versi ada di [CHANGELOG.md](CHANGELOG.md).
