@@ -9,6 +9,13 @@ class NavState {
     const TRACK_HEADING_MIN_STEP = 4.0;
     // Closer than this to the start counts as "arrived" (m).
     const ARRIVED_RADIUS = 15.0;
+    // Compass calming (only used while slow / standing still):
+    // changes smaller than DEAD_BAND are ignored (hand wobble),
+    // up to SNAP the heading jumps straight to the compass,
+    // bigger turns move SMOOTH of the way each second (90° → 45, 68, 79, 90).
+    const COMPASS_DEAD_BAND = 0.0873; // 5°
+    const COMPASS_SNAP = 0.2094;      // 12°
+    const COMPASS_SMOOTH = 0.5;
 
     var hasFix as Boolean = false;
     var lat as Float = 0.0;
@@ -17,6 +24,7 @@ class NavState {
     var startLon as Float? = null;
     var heading as Float = 0.0;
     var speed as Float = 0.0;
+    hidden var _hasHeading as Boolean = false;
 
     hidden var _prevLat as Float? = null;
     hidden var _prevLon as Float? = null;
@@ -55,13 +63,31 @@ class NavState {
         } else if (Geo.distance(pLat, pLon, lat, lon) >= TRACK_HEADING_MIN_STEP) {
             if (speed >= TRACK_HEADING_MIN_SPEED) {
                 heading = Geo.bearing(pLat, pLon, lat, lon);
+                _hasHeading = true;
             }
             _prevLat = lat;
             _prevLon = lon;
         }
         if (speed < TRACK_HEADING_MIN_SPEED && compassHeading != null) {
-            heading = compassHeading.toFloat();
+            calmCompass(compassHeading.toFloat());
         }
+    }
+
+    // Data fields redraw once a second, so the map can't rotate smoothly.
+    // Instead keep it still for small wobbles and spread big turns over a few
+    // small steps. GPS heading (moving) is not filtered, so turns stay instant.
+    hidden function calmCompass(target as Float) as Void {
+        if (!_hasHeading) {
+            heading = target;
+            _hasHeading = true;
+            return;
+        }
+        var diff = Geo.wrap(target - heading);
+        var a = diff.abs();
+        if (a < COMPASS_DEAD_BAND) {
+            return;
+        }
+        heading = (a <= COMPASS_SNAP) ? target : Geo.wrap(heading + diff * COMPASS_SMOOTH);
     }
 
     function hasStart() as Boolean {

@@ -15,7 +15,8 @@ No new watch, no subscription, no paid app.
 
 - Next-turn arrow with distance and a yellow countdown bar (full = turn now)
 - **One** vibration about 20 m before each turn
-- Off-route alert with a red line back to the route — explore side streets and always know the way back (explore mode turns the vibration off)
+- Off-route alert (one short vibration) with a red dashed line back to the route — explore side streets and always know the way back
+- North indicator that turns with the heading-up map
 - Simple route line drawn in code on a black screen (light on the AMOLED battery), no map tiles
 - **Light street map**: the roads (thicker) and alleys (thin) around your route as plain lines, downloaded once with the route and then fully offline
 - 5 saved routes on the watch, choose by tapping the screen — no phone or internet needed once saved
@@ -82,7 +83,8 @@ Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahk
 
 - Panah belokan berikutnya + jarak + bar kuning hitung mundur (penuh = belok sekarang)
 - **Satu** getar sekitar 20 m sebelum belok
-- Peringatan keluar jalur dengan garis merah ke rute — bebas masuk gang tapi selalu tahu jalan balik (mode jelajah mematikan getarnya)
+- Peringatan keluar jalur (satu getar singkat) dengan garis putus-putus merah ke rute — bebas masuk gang tapi selalu tahu jalan balik
+- Penunjuk utara yang ikut berputar bersama peta
 - Garis rute sederhana digambar dengan kode di latar hitam (hemat baterai AMOLED), tanpa peta gambar
 - **Peta ringan**: jalan (tebal) dan gang (tipis) di sekitar rute berupa garis, diunduh sekali bersama rute lalu sepenuhnya offline
 - 5 rute tersimpan di jam, pilih dengan tap layar — tanpa HP/internet setelah tersimpan

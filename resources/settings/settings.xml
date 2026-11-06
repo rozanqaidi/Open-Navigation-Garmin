@@ -30,9 +30,6 @@
     <setting propertyKey="@Properties.returnToStart" title="@Strings.SetReturnToStart">
         <settingConfig type="boolean"/>
     </setting>
-    <setting propertyKey="@Properties.exploreMode" title="@Strings.SetExploreMode">
-        <settingConfig type="boolean"/>
-    </setting>
     <setting propertyKey="@Properties.slot1Name" title="@Strings.Slot1">
         <settingConfig type="alphaNumeric"/>
     </setting>

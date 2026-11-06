@@ -76,6 +76,49 @@ module NavStateTest {
     }
 
     (:test)
+    function compassWobbleIsIgnored(logger as Logger) as Boolean {
+        // Standing still, hand shaking ±3°: map must not move.
+        var s = new NavState();
+        s.update(LAT0, LON0, 0.0, 1.0, null, null);
+        var ok = true;
+        var w = [0.05, -0.05, 0.03, -0.04];
+        for (var i = 0; i < w.size(); i++) {
+            s.update(LAT0, LON0, 0.0, 1.0 + w[i], null, null);
+            ok = ok && near(s.heading, 1.0, 0.0001);
+        }
+        return ok;
+    }
+
+    (:test)
+    function compassTurnIsSpreadOut(logger as Logger) as Boolean {
+        // Turning on the spot by 90°: small steps, then exactly on target.
+        var s = new NavState();
+        s.update(LAT0, LON0, 0.0, 0.0, null, null);
+        var target = Math.PI / 2;
+        var steps = [] as Array<Float>;
+        for (var i = 0; i < 6; i++) {
+            s.update(LAT0, LON0, 0.0, target, null, null);
+            steps.add(s.heading);
+        }
+        logger.debug("steps=" + steps);
+        var firstStepHalf = near(steps[0], target / 2, 0.01);
+        var landed = near(steps[3], target, 0.0001) && near(steps[5], target, 0.0001);
+        return firstStepHalf && landed;
+    }
+
+    (:test)
+    function compassCrossesNorth(logger as Logger) as Boolean {
+        // 350° -> 20°: must turn the short way (+30°), not back round 330°.
+        var s = new NavState();
+        var d = Math.PI / 180;
+        s.update(LAT0, LON0, 0.0, 350 * d, null, null);
+        s.update(LAT0, LON0, 0.0, 20 * d, null, null);
+        var h = Geo.wrap(s.heading) / d;
+        logger.debug("h=" + h);
+        return near(h, 5, 0.5);
+    }
+
+    (:test)
     function fastIgnoresCompassWobble(logger as Logger) as Boolean {
         // Arm swinging: compass says 2.5 rad, but we run north.
         var s = new NavState();

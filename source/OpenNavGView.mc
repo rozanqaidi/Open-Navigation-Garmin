@@ -22,7 +22,6 @@ class OpenNavGView extends WatchUi.DataField {
     hidden var _nav as Navigator? = null;
     hidden var _slot as Number = 0;
     hidden var _mode as Number = Settings.MODE_RUN;
-    hidden var _explore as Boolean = false;
     hidden var _timerOn as Boolean = false;
     hidden var _picker as Boolean = false;
     hidden var _pickerSlots as Array<Number> = [] as Array<Number>;
@@ -94,11 +93,6 @@ class OpenNavGView extends WatchUi.DataField {
             _err = [:NoConnection, :UseSaved, :OrArrowToStart];
             _errRetry = true;
         }
-    }
-
-    (:debug)
-    function testSetExplore(on as Boolean) as Void {
-        _explore = on;
     }
 
     // Runs the real settings → route pipeline without GPS/activity.
@@ -179,7 +173,6 @@ class OpenNavGView extends WatchUi.DataField {
         _map.clear();
         RouteStore.applyPhoneDeletes();
         _mode = Settings.mode();
-        _explore = Settings.flag("exploreMode");
 
         var active = Settings.get("activeSlot", 0);
         var dest = Settings.str("destination");
@@ -356,9 +349,9 @@ class OpenNavGView extends WatchUi.DataField {
             Attention.vibrate([new Attention.VibeProfile(100, 400)]);
         } else if (ev == nav.EV_ARRIVED) {
             Attention.vibrate([new Attention.VibeProfile(100, 1200)]);
-        } else if (!_explore && ev == nav.EV_OFF_ROUTE) {
+        } else if (ev == nav.EV_OFF_ROUTE) {
             Attention.vibrate([new Attention.VibeProfile(80, 300)]);
-        } else if (!_explore && ev == nav.EV_BACK_ON_ROUTE) {
+        } else if (ev == nav.EV_BACK_ON_ROUTE) {
             Attention.vibrate([new Attention.VibeProfile(60, 200)]);
         }
     }
@@ -597,6 +590,8 @@ class OpenNavGView extends WatchUi.DataField {
         } else {
             drawTurnHeader(dc, nav, k);
         }
+        // North indicator, right side; turns with the map (heading-up).
+        Draw.north(dc, dc.getWidth() * 0.82, h * 0.36, k, -state.heading, s(:NorthLetter).equals("N"));
         drawFooter(dc, nav);
     }
 
@@ -704,8 +699,5 @@ class OpenNavGView extends WatchUi.DataField {
         Draw.returnIcon(dc, x0, cy - 28 * k * 0.8 / 2, k * 0.8);
         Draw.haloText(dc, x0 + iconW + gap, cy, font, text, Draw.RED,
                       Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-        if (_explore) {
-            Draw.compass(dc, cx + 40 * k, cy + 30 * k, k);
-        }
     }
 }

@@ -84,7 +84,6 @@ module ScreenTest {
         var d = dc();
         var v = new OpenNavGView();
         var nav = v.testLoad(route(), true);
-        v.testSetExplore(true);
         walk(v, nav, 0, 0, 290, 0, 30, 0);
         for (var s = 0; s < 14; s++) {
             move(v, nav, 290 + s * 2, -60 - s * 3, 40000 + s * 1000);

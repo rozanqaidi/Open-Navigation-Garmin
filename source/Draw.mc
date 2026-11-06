@@ -174,15 +174,40 @@ module Draw {
         polyline(dc, p, 2.5 * k);
     }
 
-    // Small compass = explore mode is on.
-    function compass(dc as Dc, cx as Numeric, cy as Numeric, k as Numeric) as Void {
+    // North indicator. `ang` = where north is on screen (0 = up, clockwise).
+    // Red half points north, grey half south; the letter (U / N) sits just
+    // outside the ring in the north direction and always stays upright.
+    function north(dc as Dc, cx as Numeric, cy as Numeric, k as Numeric, ang as Numeric, letterN as Boolean) as Void {
+        var r = 11 * k;
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(cx, cy, 10 * k);
-        dc.setColor(0x888888, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1.5 * k);
-        dc.drawCircle(cx, cy, 9 * k);
-        dc.setColor(0xCCCCCC, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon([[cx, cy - 6 * k], [cx + 3.5 * k, cy + 3 * k], [cx, cy + 1 * k], [cx - 3.5 * k, cy + 3 * k]]);
+        dc.fillCircle(cx, cy, r);
+        dc.setColor(0x777777, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1.2 * k);
+        dc.drawCircle(cx, cy, r);
+        var sn = Math.sin(ang);
+        var cs = Math.cos(ang);
+        var tipX = sn * 8 * k;
+        var tipY = -cs * 8 * k;
+        var sideX = cs * 3.2 * k;
+        var sideY = sn * 3.2 * k;
+        dc.setColor(RED, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon([[cx + tipX, cy + tipY], [cx + sideX, cy + sideY], [cx - sideX, cy - sideY]]);
+        dc.setColor(0xBBBBBB, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon([[cx - tipX, cy - tipY], [cx + sideX, cy + sideY], [cx - sideX, cy - sideY]]);
+        // Letter drawn with lines, so its size doesn't depend on device fonts.
+        var lx = cx + sn * (r + 6.5 * k);
+        var ly = cy - cs * (r + 6.5 * k);
+        var shape = letterN
+            ? [[-2.3, 3.3], [-2.3, -3.3], [2.3, 3.3], [2.3, -3.3]]
+            : [[-2.3, -3.3], [-2.3, 1.6], [-1.2, 3.3], [1.2, 3.3], [2.3, 1.6], [2.3, -3.3]];
+        var p = new Array<[Numeric, Numeric]>[shape.size()];
+        for (var i = 0; i < shape.size(); i++) {
+            p[i] = [lx + shape[i][0] * k, ly + shape[i][1] * k];
+        }
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        polyline(dc, p, 3.2 * k);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        polyline(dc, p, 1.3 * k);
     }
 
     // "You are here" chevron pointing up, tip at (cx, tipY).

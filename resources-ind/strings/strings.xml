@@ -20,7 +20,6 @@
     <string id="Slot4Delete">Hapus slot 4</string>
     <string id="Slot5Delete">Hapus slot 5</string>
     <string id="SetReturnToStart">Pulang ke titik start</string>
-    <string id="SetExploreMode">Mode jelajah (tanpa getar keluar jalur)</string>
     <string id="SetServer">Server rute (lanjutan)</string>
     <string id="RouteReady">Rute siap</string>
     <string id="TapToChange">tap untuk ganti</string>
@@ -50,6 +49,7 @@
     <string id="GroupNewRouteDesc">Setelah menyimpan, buka aktivitas di jam dan geser ke layar Open NavG. Rute dan peta jalan diunduh sekitar 1 menit untuk rute 10 km, dan beberapa menit untuk marathon. Dekatkan HP ke jam dan biarkan aplikasi Garmin Connect terbuka. Jam menampilkan "Peta 12/40" selama mengunduh: itu bukan error. Setelah itu rute dan peta bisa dipakai tanpa HP.</string>
     <string id="StorageFull">Memori jam penuh</string>
     <string id="Map">Peta</string>
+    <string id="NorthLetter">U</string>
     <string id="KeepPhoneClose">dekatkan HP</string>
     <string id="WaitingPhone">Peta: menunggu HP…</string>
     <string id="MapReady">Peta siap ✓</string>
