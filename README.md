@@ -24,7 +24,7 @@ Open NavG is a free, open-source **Connect IQ data field** that adds route navig
 | `NAVG1L:…` exact line | Community GPX routes | No |
 | `NAVG1V:…` via points | Your own drawing (e.g. Strava art), snapped to real roads | Once, to fetch |
 
-The **Planner** (`docs/planner/`) turns a GPX file or points tapped on a map into a code you paste into the settings.
+The **[Planner](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)** (`docs/planner/`) turns a GPX file or points tapped on a map into a code you paste into the settings.
 
 ## Build
 Requirements: Java 17+, [Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) with the Venu 2 device, a developer key.
@@ -52,7 +52,7 @@ Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahk
 - Garis rute sederhana digambar dengan kode di latar hitam (hemat baterai AMOLED), tanpa peta
 - 5 rute tersimpan di jam, pilih dengan tap layar — tanpa HP/internet setelah tersimpan
 - Lari, sepeda, atau motor (menghindari tol)
-- Rute komunitas (GPX) dan gambar sendiri lewat **Perencana Open NavG**
+- Rute komunitas (GPX) dan gambar sendiri lewat **[Perencana Open NavG](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)**
 - Bahasa Inggris dan Indonesia, mengikuti bahasa jam/HP
 
 Cara pakai lengkap ada di [PLAN.md](PLAN.md).
