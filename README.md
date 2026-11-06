@@ -36,7 +36,9 @@ No new watch, no subscription, no paid app.
 The **[Planner](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)** (`docs/planner/`) turns a GPX file or points tapped on a map into a code you paste into the settings.
 
 ## Other watches and other brands
-**More Garmin watches.** Only the Venu 2 is built and tested today. Most of the code does not depend on the screen, so adding another Connect IQ watch is mostly adding it to `manifest.xml`, checking the layout in the simulator and testing outdoors. Pull requests for older or map-less Garmin models are very welcome.
+**More Garmin watches.** Only the Venu 2 is built and tested today. Watches with **Connect IQ API 5.0 or newer** (for example Venu 3, Forerunner 165/255) can run the same code: adding one is mostly adding it to `manifest.xml`, checking the layout in the simulator and testing outdoors.
+
+**Older watches (API 3.x, e.g. Venu, Venu Sq, vívoactive 4, Forerunner 245)** have GPS and a compass, but Connect IQ gives their data fields only 32 KB of memory and no direct web access, so they need a slimmer **Lite** build: routes from Planner codes (no web access needed on the watch), turn arrows, vibration and off-route alerts, without the map. **If you own one of these watches, you can help build and test it** — contributions are very welcome.
 
 **Other brands (Huawei, Amazfit, Wear OS, …).** The interesting parts are plain algorithms that can be ported to any watch platform (MIT licence, so commercial or personal forks are fine):
 
@@ -74,7 +76,7 @@ Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahk
 
 **Kenapa dibuat:** banyak jam Garmin, terutama seri lama atau seri gaya hidup seperti Venu 2, **sama sekali tidak punya navigasi rute**. Seri yang lebih murah pun umumnya hanya memberi garis tanpa petunjuk jalan kembali. Navigasi lengkap dengan peta dan rute ulang hanya ada di jam yang harganya dua sampai tiga kali lipat. Open NavG memberi jam yang sudah Anda punya: panah belokan dengan jarak, satu getar sebelum belok, garis untuk kembali ke rute, mode riding motorbike tanpa tol, dan bisa diisi rute dari **iPhone**. Tanpa beli jam baru dan tanpa langganan.
 
-**Untuk jam lain dan merek lain:** saat ini baru Venu 2 yang dibangun dan diuji. Jam Garmin lain bisa ditambahkan lewat `manifest.xml` lalu diuji, dan kontribusi sangat diterima. Bagian intinya berupa algoritma biasa yang bisa dipindahkan ke platform jam lain seperti Huawei, Amazfit, atau Wear OS: kode rute, penyederhanaan, deteksi belokan dari bentuk rute, navigator keluar/kembali jalur, dan Perencana web. Lisensinya MIT. Detail file ada di bagian *Other watches and other brands* di atas.
+**Untuk jam lain dan merek lain:** saat ini baru Venu 2 yang dibangun dan diuji. Jam dengan **Connect IQ API 5.0 ke atas** (misalnya Venu 3, Forerunner 165/255) bisa ditambahkan lewat `manifest.xml` lalu diuji. **Jam lama (API 3.x, misalnya Venu, Venu Sq, vívoactive 4, Forerunner 245)** punya GPS dan kompas, tapi data field-nya hanya diberi memori 32 KB dan tidak bisa mengakses internet langsung, jadi perlu versi **Lite** yang lebih ramping: rute dari kode Perencana, panah belokan, getar, dan peringatan keluar jalur, tanpa peta. **Bagi yang memiliki jam-jam ini, Anda dapat ikut berkontribusi** membangun dan mengujinya. Bagian intinya berupa algoritma biasa yang bisa dipindahkan ke platform jam lain seperti Huawei, Amazfit, atau Wear OS: kode rute, penyederhanaan, deteksi belokan dari bentuk rute, navigator keluar/kembali jalur, dan Perencana web. Lisensinya MIT. Detail file ada di bagian *Other watches and other brands* di atas.
 
 - Panah belokan berikutnya + jarak + bar kuning hitung mundur (penuh = belok sekarang)
 - **Satu** getar sekitar 20 m sebelum belok
