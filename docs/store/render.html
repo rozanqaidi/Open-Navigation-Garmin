@@ -1,0 +1,71 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="416" height="416"></canvas>
+<script>
+// Renders the Open NavG store screenshots (same shapes/colours as the watch code).
+const S = 416, K = S / 200;
+const BLUE = '#3aa0ff', GREY = '#3a3a3a', YEL = '#f5c542', RED = '#ff6b5e', GREEN = '#2ecc71';
+const c = document.getElementById('c'), x = c.getContext('2d');
+x.fillStyle = '#000'; x.fillRect(0, 0, S, S);
+x.save(); x.beginPath(); x.arc(S/2, S/2, S/2 - 2, 0, Math.PI*2); x.clip();
+x.lineCap = 'round'; x.lineJoin = 'round';
+function path(d, color, w) { x.save(); x.scale(K, K); x.strokeStyle = color; x.lineWidth = w; x.lineCap = 'round'; x.lineJoin = 'round'; x.stroke(new Path2D(d)); x.restore(); }
+function halo(text, px, cx, cy, color, align) {
+  x.font = `600 ${px}px -apple-system, Helvetica, Arial, sans-serif`;
+  x.textAlign = align || 'center'; x.textBaseline = 'middle';
+  x.lineWidth = Math.max(2, px * 0.16); x.strokeStyle = '#000'; x.lineJoin = 'round';
+  x.strokeText(text, cx, cy); x.fillStyle = color; x.fillText(text, cx, cy);
+}
+function me(cx, tipY) {
+  x.beginPath(); x.moveTo(cx, tipY); x.lineTo(cx - 12*K, tipY + 19*K); x.lineTo(cx, tipY + 12*K); x.lineTo(cx + 12*K, tipY + 19*K); x.closePath();
+  x.lineWidth = 3; x.strokeStyle = '#000'; x.stroke(); x.fillStyle = '#fff'; x.fill();
+}
+const ICON = {
+  right: ['M5 27 L5 14 Q5 7 12 7 L15 7', 'M14 0 L24 7 L14 14 Z', false],
+  left: ['M5 27 L5 14 Q5 7 12 7 L15 7', 'M14 0 L24 7 L14 14 Z', true],
+  back: ['M19 27 L19 14 Q19 7 12 7 L9 7', 'M10 0 L0 7 L10 14 Z', false]
+};
+function icon(kind, ox, oy, color) {
+  x.save(); x.translate(ox, oy);
+  if (ICON[kind][2]) { x.translate(24*K, 0); x.scale(-1, 1); }
+  x.scale(K, K); x.lineCap = 'round'; x.lineJoin = 'round';
+  const stem = new Path2D(ICON[kind][0]), head = new Path2D(ICON[kind][1]);
+  x.strokeStyle = '#000'; x.lineWidth = 7.5; x.stroke(stem); x.lineWidth = 3; x.stroke(head);
+  x.strokeStyle = color; x.lineWidth = 5; x.stroke(stem); x.fillStyle = color; x.fill(head);
+  x.restore();
+}
+function header(kind, text, frac, color) {
+  const px = 20*K; x.font = `600 ${px}px -apple-system, Helvetica, Arial, sans-serif`;
+  const tw = x.measureText(text).width, iw = 24*K, gap = 7*K, total = iw + gap + tw, x0 = S/2 - total/2, cy = 36*K;
+  icon(kind, x0, cy - 14*K, color || '#fff');
+  halo(text, px, x0 + iw + gap, cy, color || '#fff', 'left');
+  if (frac === null) return;
+  const bw = Math.max(total, 70*K), bx = S/2 - bw/2, by = cy + 20*K, bh = 4*K;
+  const rr = (X, Y, W, H, col) => { x.fillStyle = col; x.beginPath(); x.roundRect(X, Y, W, H, H/2); x.fill(); };
+  rr(bx - 2, by - 2, bw + 4, bh + 4, '#000'); rr(bx, by, bw, bh, '#333'); if (frac > 0) rr(bx, by, Math.max(bh, bw*frac), bh, YEL);
+}
+const foot = t => halo(t, 11*K, S/2, 172*K, '#bbb');
+const s = new URLSearchParams(location.search).get('s');
+if (s === 'approach') {
+  path('M100 200 L100 134', GREY, 5); path('M100 134 L104 74 L56 64 L48 -10', BLUE, 5);
+  me(S/2, 124*K); header('left', '220 m', 0.27); foot('4.0 km lagi');
+} else if (s === 'turn') {
+  path('M100 200 L100 134', GREY, 5); path('M100 134 L100 120 L150 112 L162 -10', BLUE, 5);
+  me(S/2, 124*K); header('right', '20 m', 0.93); foot('3.8 km lagi');
+} else if (s === 'off') {
+  path('M40 200 L40 160', GREY, 5); path('M40 160 L40 130 L58 76 L110 46 L120 -10', BLUE, 5);
+  x.save(); x.scale(K, K); x.lineCap = 'round'; x.setLineDash([3, 4]); x.strokeStyle = GREEN; x.lineWidth = 3; x.stroke(new Path2D('M40 160 Q70 175 112 150'));
+  x.setLineDash([6, 4]); x.strokeStyle = RED; x.stroke(new Path2D('M112 140 L56 84')); x.setLineDash([]);
+  x.beginPath(); x.arc(56, 84, 5, 0, 7); x.fillStyle = RED; x.fill(); x.lineWidth = 1; x.strokeStyle = '#000'; x.stroke(); x.restore();
+  me(112*K, 128*K); header('back', '85 m', null, RED);
+  x.save(); x.translate(140*K, 68*K); x.beginPath(); x.arc(0, 0, 9*K, 0, 7); x.fillStyle = '#000'; x.fill(); x.lineWidth = 1.5*K; x.strokeStyle = '#888'; x.stroke();
+  x.beginPath(); x.moveTo(0, -6*K); x.lineTo(3.5*K, 3*K); x.lineTo(0, 1*K); x.lineTo(-3.5*K, 3*K); x.closePath(); x.fillStyle = '#ccc'; x.fill(); x.restore();
+  foot('4.1 km lagi');
+} else if (s === 'ready') {
+  halo('Rute siap', 14*K, S/2, 40*K, GREEN);
+  path('M70 120 L72 92 L96 86 L102 66 L126 70 L130 100 L104 110 Z', BLUE, 3);
+  x.beginPath(); x.arc(70*K, 120*K, 4*K, 0, 7); x.fillStyle = '#fff'; x.fill();
+  halo('Loop Monas 10K', 14*K, S/2, 142*K, '#fff');
+  halo('10.2 km · tap untuk ganti', 10*K, S/2, 162*K, '#bbb');
+}
+</script></body></html>
