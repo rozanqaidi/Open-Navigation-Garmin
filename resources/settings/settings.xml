@@ -1,0 +1,64 @@
+<settings>
+    <setting propertyKey="@Properties.destination" title="@Strings.SetDestination" prompt="@Strings.SetDestinationPrompt">
+        <settingConfig type="alphaNumeric" maxLength="4000"/>
+    </setting>
+    <setting propertyKey="@Properties.routeName" title="@Strings.SetRouteName">
+        <settingConfig type="alphaNumeric" maxLength="40"/>
+    </setting>
+    <setting propertyKey="@Properties.mode" title="@Strings.SetMode">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ModeRun</listEntry>
+            <listEntry value="1">@Strings.ModeBike</listEntry>
+            <listEntry value="2">@Strings.ModeMoto</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.activeSlot" title="@Strings.SetActiveSlot">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.SlotNew</listEntry>
+            <listEntry value="1">@Strings.Slot1</listEntry>
+            <listEntry value="2">@Strings.Slot2</listEntry>
+            <listEntry value="3">@Strings.Slot3</listEntry>
+            <listEntry value="4">@Strings.Slot4</listEntry>
+            <listEntry value="5">@Strings.Slot5</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.returnToStart" title="@Strings.SetReturnToStart">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.exploreMode" title="@Strings.SetExploreMode">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.slot1Name" title="@Strings.Slot1">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    <setting propertyKey="@Properties.slot1Delete" title="@Strings.Slot1Delete">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.slot2Name" title="@Strings.Slot2">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    <setting propertyKey="@Properties.slot2Delete" title="@Strings.Slot2Delete">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.slot3Name" title="@Strings.Slot3">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    <setting propertyKey="@Properties.slot3Delete" title="@Strings.Slot3Delete">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.slot4Name" title="@Strings.Slot4">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    <setting propertyKey="@Properties.slot4Delete" title="@Strings.Slot4Delete">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.slot5Name" title="@Strings.Slot5">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    <setting propertyKey="@Properties.slot5Delete" title="@Strings.Slot5Delete">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.serverUrl" title="@Strings.SetServer">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+</settings>

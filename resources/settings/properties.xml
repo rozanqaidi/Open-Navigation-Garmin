@@ -1,0 +1,19 @@
+<properties>
+    <property id="destination" type="string"></property>
+    <property id="routeName" type="string"></property>
+    <property id="mode" type="number">0</property>
+    <property id="activeSlot" type="number">0</property>
+    <property id="returnToStart" type="boolean">false</property>
+    <property id="exploreMode" type="boolean">false</property>
+    <property id="slot1Name" type="string"></property>
+    <property id="slot2Name" type="string"></property>
+    <property id="slot3Name" type="string"></property>
+    <property id="slot4Name" type="string"></property>
+    <property id="slot5Name" type="string"></property>
+    <property id="slot1Delete" type="boolean">false</property>
+    <property id="slot2Delete" type="boolean">false</property>
+    <property id="slot3Delete" type="boolean">false</property>
+    <property id="slot4Delete" type="boolean">false</property>
+    <property id="slot5Delete" type="boolean">false</property>
+    <property id="serverUrl" type="string">https://valhalla1.openstreetmap.de/route</property>
+</properties>

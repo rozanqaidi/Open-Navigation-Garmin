@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open NavG Planner</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root { --bg:#ffffff; --fg:#1c1c1e; --muted:#6b6b70; --card:#f2f2f5; --accent:#1f7ae0; --line:#d9d9de; --ok:#1f9d55; --warn:#b26a00; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111214; --fg:#f2f2f5; --muted:#a0a0a8; --card:#1d1e22; --accent:#4aa3ff; --line:#2c2d33; --ok:#3ccf7a; --warn:#f5c542; } }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding:14px 16px 8px; }
+  h1 { font-size:20px; margin:0; font-weight:600; }
+  header p { margin:4px 0 0; color:var(--muted); font-size:14px; }
+  #map { height:52vh; min-height:300px; margin:0 16px; border-radius:12px; border:1px solid var(--line); }
+  .tabs { display:flex; gap:8px; margin:12px 16px 0; }
+  .tabs button { flex:1; }
+  button, select, .file { font:inherit; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--fg); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button.on { outline:2px solid var(--accent); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin:10px 16px 0; align-items:center; }
+  .row > * { flex:1 1 auto; }
+  .card { margin:12px 16px; padding:12px 14px; background:var(--card); border-radius:12px; }
+  .stats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; font-size:14px; }
+  .stats b { display:block; font-size:18px; }
+  textarea { width:100%; height:84px; font:12px/1.4 ui-monospace, Menlo, monospace; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--fg); padding:8px; resize:vertical; }
+  ol { margin:6px 0 0; padding-left:20px; }
+  li { margin:4px 0; }
+  .muted { color:var(--muted); font-size:14px; }
+  .warn { color:var(--warn); }
+  .ok { color:var(--ok); }
+  .hidden { display:none; }
+  input[type=file] { display:none; }
+  label.file { display:block; text-align:center; cursor:pointer; }
+  footer { margin:8px 16px 24px; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Open NavG <span data-t="planner"></span></h1>
+  <p data-t="subtitle"></p>
+</header>
+
+<div class="tabs">
+  <button id="tabGpx" class="on" data-t="tabGpx"></button>
+  <button id="tabDraw" data-t="tabDraw"></button>
+</div>
+
+<div id="paneGpx" class="row">
+  <label class="file" for="gpxFile" data-t="pickGpx"></label>
+  <input id="gpxFile" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml">
+</div>
+
+<div id="paneDraw" class="row hidden">
+  <button id="undo" data-t="undo"></button>
+  <button id="clear" data-t="clear"></button>
+</div>
+
+<div class="row">
+  <select id="mode">
+    <option value="foot" data-t="modeRun"></option>
+    <option value="bike" data-t="modeBike"></option>
+    <option value="car" data-t="modeMoto"></option>
+  </select>
+  <select id="kind">
+    <option value="L" data-t="kindLine"></option>
+    <option value="V" data-t="kindVia"></option>
+  </select>
+</div>
+
+<div id="map"></div>
+
+<div class="card">
+  <div class="stats">
+    <div><span data-t="distance"></span><b id="statKm">–</b></div>
+    <div><span data-t="points"></span><b id="statPts">–</b></div>
+    <div><span data-t="codeLength"></span><b id="statLen">–</b></div>
+  </div>
+  <p id="status" class="muted"></p>
+</div>
+
+<div class="card">
+  <textarea id="code" readonly></textarea>
+  <div class="row" style="margin:8px 0 0">
+    <button id="copy" class="primary" data-t="copy"></button>
+  </div>
+</div>
+
+<div class="card">
+  <b data-t="howTitle"></b>
+  <ol>
+    <li data-t="how1"></li>
+    <li data-t="how2"></li>
+    <li data-t="how3"></li>
+    <li data-t="how4"></li>
+  </ol>
+</div>
+
+<footer>Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Routing: OSRM (FOSSGIS) · Open NavG is free and open source (MIT).</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ---------------- language (follows the phone/browser setting) ----------------
+const STR = {
+  en: {
+    planner: "Planner", subtitle: "Turn a community GPX or your own drawing into a route code for your watch.",
+    tabGpx: "Import GPX", tabDraw: "Draw", pickGpx: "Choose a GPX file", undo: "Undo point", clear: "Clear",
+    modeRun: "Run", modeBike: "Bike", modeMoto: "Motorbike",
+    kindLine: "Follow this exact line (works offline)", kindVia: "Snap points to roads (short code)",
+    distance: "Distance", points: "Points", codeLength: "Code length", copy: "Copy route code", copied: "Copied ✓",
+    howTitle: "Send it to your watch",
+    how1: "Copy the route code above.",
+    how2: "Open the Connect IQ app (or Garmin Connect) → your watch → Open NavG → Settings.",
+    how3: "Paste it into “Destination or route code”, fill in “Route name”, set “Active route” to “New route”, then Save.",
+    how4: "On the watch, open Run and swipe to the Open NavG screen: the route is saved to a free slot.",
+    drawHint: "Tap the map to add points in order. Add a point at every corner of your drawing.",
+    gpxHint: "Pick a .gpx file (for example one saved from WhatsApp to the Files app).",
+    noPoints: "Add at least 2 points.", gpxError: "This file has no track or route points.",
+    snapping: "Snapping to roads…", snapFailed: "Could not reach the routing server; showing straight lines.",
+    longCode: "Long code. If the phone settings won't accept it, switch to “Snap points to roads”.",
+    tooManyVia: "Too many points for one request; using the first 90."
+  },
+  id: {
+    planner: "Perencana", subtitle: "Ubah GPX komunitas atau gambar Anda sendiri menjadi kode rute untuk jam.",
+    tabGpx: "Impor GPX", tabDraw: "Gambar", pickGpx: "Pilih file GPX", undo: "Hapus titik terakhir", clear: "Bersihkan",
+    modeRun: "Lari", modeBike: "Sepeda", modeMoto: "Motor",
+    kindLine: "Ikuti garis persis (bisa offline)", kindVia: "Tempelkan titik ke jalan (kode pendek)",
+    distance: "Jarak", points: "Titik", codeLength: "Panjang kode", copy: "Salin kode rute", copied: "Tersalin ✓",
+    howTitle: "Kirim ke jam",
+    how1: "Salin kode rute di atas.",
+    how2: "Buka aplikasi Connect IQ (atau Garmin Connect) → jam Anda → Open NavG → Pengaturan.",
+    how3: "Tempel ke “Tujuan atau kode rute”, isi “Nama rute”, pilih “Rute aktif” = “Rute baru”, lalu Simpan.",
+    how4: "Di jam, buka Run lalu geser ke layar Open NavG: rute otomatis tersimpan ke slot kosong.",
+    drawHint: "Tap peta untuk menambah titik secara berurutan. Taruh titik di setiap sudut gambar Anda.",
+    gpxHint: "Pilih file .gpx (misalnya yang disimpan dari WhatsApp ke aplikasi Files).",
+    noPoints: "Tambahkan minimal 2 titik.", gpxError: "File ini tidak berisi titik track atau rute.",
+    snapping: "Menempelkan ke jalan…", snapFailed: "Server rute tidak terjangkau; menampilkan garis lurus.",
+    longCode: "Kode panjang. Kalau pengaturan di HP menolak, ganti ke “Tempelkan titik ke jalan”.",
+    tooManyVia: "Titik terlalu banyak untuk satu permintaan; dipakai 90 titik pertama."
+  }
+};
+const LANG = (navigator.language || "en").toLowerCase().startsWith("id") ? "id" : "en";
+const t = k => STR[LANG][k] || STR.en[k] || k;
+document.documentElement.lang = LANG;
+document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+
+// ---------------- geometry ----------------
+const R = 6371000;
+function dist(a, b) {
+  const la1 = a[0] * Math.PI / 180, la2 = b[0] * Math.PI / 180;
+  const dla = la2 - la1, dlo = (b[1] - a[1]) * Math.PI / 180;
+  const h = Math.sin(dla / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dlo / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function lengthM(pts) { let s = 0; for (let i = 1; i < pts.length; i++) s += dist(pts[i - 1], pts[i]); return s; }
+
+// Douglas-Peucker on a local flat projection (metres)
+function simplify(pts, tol) {
+  if (pts.length <= 2) return pts.slice();
+  const c = Math.cos(pts[0][0] * Math.PI / 180);
+  const xy = pts.map(p => [(p[1] - pts[0][1]) * Math.PI / 180 * c * R, (p[0] - pts[0][0]) * Math.PI / 180 * R]);
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [f, l] = stack.pop();
+    const [ax, ay] = xy[f], dx = xy[l][0] - ax, dy = xy[l][1] - ay, L2 = dx * dx + dy * dy;
+    let best = -1, bestD = 0;
+    for (let k = f + 1; k < l; k++) {
+      const px = xy[k][0] - ax, py = xy[k][1] - ay;
+      let u = L2 > 0 ? (px * dx + py * dy) / L2 : 0; u = Math.max(0, Math.min(1, u));
+      const qx = px - u * dx, qy = py - u * dy, d = qx * qx + qy * qy;
+      if (d > bestD) { bestD = d; best = k; }
+    }
+    if (best >= 0 && bestD > tol * tol) { keep[best] = 1; stack.push([f, best], [best, l]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+function simplifyTo(pts, maxPts, tol0) {
+  let tol = tol0, out = simplify(pts, tol);
+  while (out.length > maxPts && tol < 2000) { tol *= 1.5; out = simplify(pts, tol); }
+  return out;
+}
+
+// Encoded polyline, precision 5 (what the watch decodes)
+function encode(pts) {
+  let out = "", plat = 0, plon = 0;
+  const enc = v => { v = v < 0 ? ~(v << 1) : (v << 1); let s = ""; while (v >= 0x20) { s += String.fromCharCode((0x20 | (v & 0x1f)) + 63); v >>= 5; } return s + String.fromCharCode(v + 63); };
+  for (const [la, lo] of pts) {
+    const a = Math.round(la * 1e5), b = Math.round(lo * 1e5);
+    out += enc(a - plat) + enc(b - plon); plat = a; plon = b;
+  }
+  return out;
+}
+function decode(str) {
+  const pts = []; let i = 0, lat = 0, lon = 0;
+  while (i < str.length) {
+    for (const which of [0, 1]) {
+      let res = 0, sh = 0, b;
+      do { b = str.charCodeAt(i++) - 63; res |= (b & 0x1f) << sh; sh += 5; } while (b >= 0x20);
+      const d = (res & 1) ? ~(res >> 1) : (res >> 1);
+      if (which === 0) lat += d; else lon += d;
+    }
+    pts.push([lat / 1e5, lon / 1e5]);
+  }
+  return pts;
+}
+
+// ---------------- map ----------------
+const map = L.map("map", { zoomControl: true }).setView([-6.2, 106.82], 13);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: "© OpenStreetMap"
+}).addTo(map);
+const sourceLayer = L.polyline([], { color: "#888", weight: 3, dashArray: "4 6" }).addTo(map);
+const routeLayer = L.polyline([], { color: "#3aa0ff", weight: 5 }).addTo(map);
+const markers = L.layerGroup().addTo(map);
+navigator.geolocation && navigator.geolocation.getCurrentPosition(p => { if (!source.length) map.setView([p.coords.latitude, p.coords.longitude], 15); }, () => {});
+
+// ---------------- state ----------------
+let tab = "gpx";
+let source = [];     // GPX track or drawn points [lat, lon]
+let snapSeq = 0;
+const $ = id => document.getElementById(id);
+
+function setStatus(msg, cls) { const s = $("status"); s.textContent = msg || ""; s.className = cls || "muted"; }
+
+function drawMarkers() {
+  markers.clearLayers();
+  if (tab !== "draw") return;
+  source.forEach((p, i) => L.circleMarker(p, { radius: 6, color: "#fff", weight: 2, fillColor: i === 0 ? "#2ecc71" : "#3aa0ff", fillOpacity: 1 }).addTo(markers));
+}
+
+async function snapToRoads(points) {
+  const profile = { foot: "routed-foot", bike: "routed-bike", car: "routed-car" }[$("mode").value];
+  const coords = points.map(p => p[1].toFixed(5) + "," + p[0].toFixed(5)).join(";");
+  const url = `https://routing.openstreetmap.de/${profile}/route/v1/driving/${coords}?overview=full&geometries=polyline&steps=false`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  if (!j.routes || !j.routes.length) throw new Error("no route");
+  return decode(j.routes[0].geometry);
+}
+
+async function update() {
+  drawMarkers();
+  sourceLayer.setLatLngs(source);
+  if (source.length < 2) {
+    routeLayer.setLatLngs([]); $("code").value = "";
+    ["statKm", "statPts", "statLen"].forEach(id => $(id).textContent = "–");
+    setStatus(tab === "draw" ? t("drawHint") : t("gpxHint"));
+    return;
+  }
+  const kind = $("kind").value;
+  let codePts, preview;
+  if (kind === "L") {
+    // Line: the watch follows this exact line. Keep it light: ≤ 250 points.
+    codePts = simplifyTo(source, 250, 8);
+    preview = codePts;
+    setStatus("");
+  } else {
+    // Via: corners only; the watch asks OSRM to connect them on real roads.
+    let via = tab === "draw" ? source.slice() : simplifyTo(source, 30, 30);
+    if (via.length > 90) { via = via.slice(0, 90); setStatus(t("tooManyVia"), "warn"); }
+    codePts = via;
+    const seq = ++snapSeq;
+    setStatus(t("snapping"));
+    try {
+      preview = await snapToRoads(via);
+      if (seq !== snapSeq) return;
+      setStatus("");
+    } catch (e) {
+      if (seq !== snapSeq) return;
+      preview = via;
+      setStatus(t("snapFailed"), "warn");
+    }
+  }
+  routeLayer.setLatLngs(preview);
+  const code = "NAVG1" + kind + ":" + encode(codePts);
+  $("code").value = code;
+  $("statKm").textContent = (lengthM(preview) / 1000).toFixed(2) + " km";
+  $("statPts").textContent = codePts.length;
+  $("statLen").textContent = code.length;
+  if (kind === "L" && code.length > 1500) setStatus(t("longCode"), "warn");
+}
+
+// ---------------- GPX import ----------------
+$("gpxFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const doc = new DOMParser().parseFromString(await f.text(), "application/xml");
+  let nodes = [...doc.getElementsByTagName("trkpt")];
+  if (!nodes.length) nodes = [...doc.getElementsByTagName("rtept")];
+  if (!nodes.length) nodes = [...doc.getElementsByTagName("wpt")];
+  const pts = nodes.map(n => [parseFloat(n.getAttribute("lat")), parseFloat(n.getAttribute("lon"))]).filter(p => isFinite(p[0]) && isFinite(p[1]));
+  if (pts.length < 2) { setStatus(t("gpxError"), "warn"); return; }
+  source = pts;
+  map.fitBounds(L.latLngBounds(pts), { padding: [20, 20] });
+  update();
+});
+
+// ---------------- drawing ----------------
+map.on("click", e => {
+  if (tab !== "draw") return;
+  source.push([e.latlng.lat, e.latlng.lng]);
+  update();
+});
+$("undo").onclick = () => { source.pop(); update(); };
+$("clear").onclick = () => { source = []; update(); };
+
+function setTab(next) {
+  tab = next;
+  $("tabGpx").classList.toggle("on", tab === "gpx");
+  $("tabDraw").classList.toggle("on", tab === "draw");
+  $("paneGpx").classList.toggle("hidden", tab !== "gpx");
+  $("paneDraw").classList.toggle("hidden", tab !== "draw");
+  // Drawings are snapped to roads by default; GPX follows the exact line.
+  $("kind").value = tab === "draw" ? "V" : "L";
+  source = [];
+  update();
+}
+$("tabGpx").onclick = () => setTab("gpx");
+$("tabDraw").onclick = () => setTab("draw");
+$("mode").onchange = update;
+$("kind").onchange = update;
+
+$("copy").onclick = async () => {
+  const code = $("code").value;
+  if (!code) { setStatus(t("noPoints"), "warn"); return; }
+  try { await navigator.clipboard.writeText(code); }
+  catch (e) { $("code").select(); document.execCommand("copy"); }
+  $("copy").textContent = t("copied");
+  setTimeout(() => { $("copy").textContent = t("copy"); }, 1800);
+};
+
+update();
+</script>
+</body>
+</html>
