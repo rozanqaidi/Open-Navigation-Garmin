@@ -17,6 +17,7 @@ No new watch, no subscription, no paid app.
 - **One** vibration about 20 m before each turn
 - Off-route alert with a red line back to the route — explore side streets and always know the way back (explore mode turns the vibration off)
 - Simple route line drawn in code on a black screen (light on the AMOLED battery), no map tiles
+- **Light street map**: the roads (thicker) and alleys (thin) around your route as plain lines, downloaded once with the route and then fully offline
 - 5 saved routes on the watch, choose by tapping the screen — no phone or internet needed once saved
 - Running, cycling, or riding a motorbike (avoids toll roads)
 - Community routes (GPX) and your own drawings via the **Open NavG Planner**
@@ -24,7 +25,7 @@ No new watch, no subscription, no paid app.
 
 ## How it works
 1. Phone settings (Connect IQ app → Open NavG → Settings): a destination (coordinates or a Google Maps link) **or** a route code from the Planner, plus a route name.
-2. The watch asks a free routing server (Valhalla or OSRM, OpenStreetMap data) for the route through the phone, simplifies it and saves it to a slot.
+2. The watch asks a free routing server (Valhalla or OSRM, OpenStreetMap data) for the route through the phone, simplifies it and saves it to a slot. Right after, it downloads the streets around the route from the same Valhalla server (about 1 minute for 10 km, a few minutes for a marathon: keep the phone close with Garmin Connect open).
 3. All guidance — turns, off-route, arrival — is computed on the watch from the route's shape, using the watch's own GPS.
 
 ### Route codes
@@ -49,6 +50,7 @@ The **[Planner](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)** 
 | Turn detection | `source/Route.mc` | Finds left/right/U-turns from the route's shape alone — no turn list needed from the server |
 | Guidance | `source/Navigator.mc` | Snaps GPS to the route, next turn + distance, off-route with hysteresis, rejoin point ahead, arrival |
 | Routing | `source/RouteFetcher.mc` | Free Valhalla / OSRM requests (foot, bike, riding a motorbike without tolls) |
+| Street map | `source/StreetMap.mc` | Downloads the streets around a route from Valhalla `/expansion` (1 request/s), stores them compactly (2 m int16 grid) and draws them heading-up |
 | Planner | `docs/planner/` | Web page (no build, no server) that makes route codes from GPX or a drawn line — reusable as-is by any watch app |
 | Screens | `source/OpenNavGView.mc`, `source/Draw.mc` | Everything drawn in code; use as a reference design |
 
@@ -63,7 +65,7 @@ scripts/build.sh --test     # unit tests; run with: monkeydo bin/OpenNavG-test.p
 ```
 
 ## Credits
-Map data © OpenStreetMap contributors. Routing by Valhalla and OSRM servers run by FOSSGIS — please respect their fair-use policies (the server is configurable in the settings).
+Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) ([ODbL](https://opendatacommons.org/licenses/odbl/)) — [report or fix a map error](https://www.openstreetmap.org/fixthemap). Routing and street map by the Valhalla and OSRM servers run by [FOSSGIS](https://fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen) — the app sends at most one request per second and keeps the server configurable in the settings, as their terms ask.
 
 ## License
 MIT — see [LICENSE](LICENSE).
@@ -81,7 +83,8 @@ Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahk
 - Panah belokan berikutnya + jarak + bar kuning hitung mundur (penuh = belok sekarang)
 - **Satu** getar sekitar 20 m sebelum belok
 - Peringatan keluar jalur dengan garis merah ke rute — bebas masuk gang tapi selalu tahu jalan balik (mode jelajah mematikan getarnya)
-- Garis rute sederhana digambar dengan kode di latar hitam (hemat baterai AMOLED), tanpa peta
+- Garis rute sederhana digambar dengan kode di latar hitam (hemat baterai AMOLED), tanpa peta gambar
+- **Peta ringan**: jalan (tebal) dan gang (tipis) di sekitar rute berupa garis, diunduh sekali bersama rute lalu sepenuhnya offline
 - 5 rute tersimpan di jam, pilih dengan tap layar — tanpa HP/internet setelah tersimpan
 - Lari, sepeda, atau riding motorbike (menghindari tol)
 - Rute komunitas (GPX) dan gambar sendiri lewat **[Perencana Open NavG](https://rozanqaidi.github.io/Open-Navigation-Garmin/planner/)**

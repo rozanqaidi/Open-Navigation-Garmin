@@ -1,17 +1,22 @@
 <settings>
-    <setting propertyKey="@Properties.destination" title="@Strings.SetDestination" prompt="@Strings.SetDestinationPrompt">
-        <settingConfig type="alphaNumeric" maxLength="4000"/>
-    </setting>
-    <setting propertyKey="@Properties.routeName" title="@Strings.SetRouteName">
-        <settingConfig type="alphaNumeric" maxLength="40"/>
-    </setting>
-    <setting propertyKey="@Properties.mode" title="@Strings.SetMode">
-        <settingConfig type="list">
-            <listEntry value="0">@Strings.ModeRun</listEntry>
-            <listEntry value="1">@Strings.ModeBike</listEntry>
-            <listEntry value="2">@Strings.ModeMoto</listEntry>
-        </settingConfig>
-    </setting>
+    <group id="newRoute" title="@Strings.GroupNewRoute" description="@Strings.GroupNewRouteDesc">
+        <setting propertyKey="@Properties.destination" title="@Strings.SetDestination" prompt="@Strings.SetDestinationPrompt">
+            <settingConfig type="alphaNumeric" maxLength="4000"/>
+        </setting>
+        <setting propertyKey="@Properties.routeName" title="@Strings.SetRouteName">
+            <settingConfig type="alphaNumeric" maxLength="40"/>
+        </setting>
+        <setting propertyKey="@Properties.mode" title="@Strings.SetMode">
+            <settingConfig type="list">
+                <listEntry value="0">@Strings.ModeRun</listEntry>
+                <listEntry value="1">@Strings.ModeBike</listEntry>
+                <listEntry value="2">@Strings.ModeMoto</listEntry>
+            </settingConfig>
+        </setting>
+        <setting propertyKey="@Properties.mapEnabled" title="@Strings.SetMap">
+            <settingConfig type="boolean"/>
+        </setting>
+    </group>
     <setting propertyKey="@Properties.activeSlot" title="@Strings.SetActiveSlot">
         <settingConfig type="list">
             <listEntry value="0">@Strings.SlotNew</listEntry>

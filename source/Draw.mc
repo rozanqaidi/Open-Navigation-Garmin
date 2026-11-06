@@ -6,7 +6,7 @@ import Toybox.Math;
 // Icons are defined in a 24 x 28 box and scaled by k.
 module Draw {
     const BLUE = 0x3AA0FF;
-    const GREY = 0x444444;
+    const GREY = 0x5B5B5B;     // route already done (lighter than the street map)
     const YELLOW = 0xF5C542;
     const RED = 0xFF6B5E;
     const GREEN = 0x2ECC71;

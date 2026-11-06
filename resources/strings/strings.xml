@@ -45,4 +45,13 @@
     <string id="ChooseRoute">Choose route</string>
     <string id="ArrowToStart">Arrow to start</string>
     <string id="Turn">Turn</string>
+    <string id="SetMap">Download street map</string>
+    <string id="GroupNewRoute">New route</string>
+    <string id="GroupNewRouteDesc">After saving, open your activity on the watch and swipe to the Open NavG screen. Route and street map download takes about 1 minute for 10 km and a few minutes for a marathon. Keep the phone close to the watch with Garmin Connect open. The watch shows "Map 12/40" while it downloads: that is not an error. After that the route and map work without the phone.</string>
+    <string id="StorageFull">Watch memory full</string>
+    <string id="Map">Map</string>
+    <string id="KeepPhoneClose">keep phone close</string>
+    <string id="WaitingPhone">Map: waiting for phone…</string>
+    <string id="MapReady">Map ready ✓</string>
+    <string id="MapFull">Map memory full: delete a route</string>
 </strings>

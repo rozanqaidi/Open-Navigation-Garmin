@@ -5,6 +5,7 @@
     <property id="activeSlot" type="number">0</property>
     <property id="returnToStart" type="boolean">false</property>
     <property id="exploreMode" type="boolean">false</property>
+    <property id="mapEnabled" type="boolean">true</property>
     <property id="slot1Name" type="string"></property>
     <property id="slot2Name" type="string"></property>
     <property id="slot3Name" type="string"></property>

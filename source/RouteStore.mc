@@ -20,18 +20,26 @@ module RouteStore {
         return Application.Storage.getValue(key(slot)) as Dictionary?;
     }
 
-    function save(slot as Number, name as String, pts as Array<Float>, mode as Number) as Void {
-        Application.Storage.setValue(key(slot), {
-            "name" => name,
-            "pts" => pts,
-            "len" => Polyline.lengthM(pts),
-            "mode" => mode
-        });
+    // Returns false when the watch storage is full.
+    function save(slot as Number, name as String, pts as Array<Float>, mode as Number) as Boolean {
+        MapStore.erase(slot);
+        try {
+            Application.Storage.setValue(key(slot), {
+                "name" => name,
+                "pts" => pts,
+                "len" => Polyline.lengthM(pts),
+                "mode" => mode
+            });
+        } catch (e) {
+            return false;
+        }
         Settings.set("slot" + slot + "Name", name);
+        return true;
     }
 
     function remove(slot as Number) as Void {
         Application.Storage.deleteValue(key(slot));
+        MapStore.erase(slot);
         Settings.set("slot" + slot + "Name", "");
         Settings.set("slot" + slot + "Delete", false);
         if (Settings.get("activeSlot", 0) == slot) {

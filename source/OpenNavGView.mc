@@ -29,6 +29,7 @@ class OpenNavGView extends WatchUi.DataField {
     hidden var _err as Array<Symbol> = [] as Array<Symbol>;
     hidden var _errRetry as Boolean = false;
     hidden var _fetcher as RouteFetcher?;
+    hidden var _map as StreetMap = new StreetMap();
 
     // Route processing is split over several compute() calls to stay under the watchdog.
     hidden var _stage as Number = 0;
@@ -38,6 +39,7 @@ class OpenNavGView extends WatchUi.DataField {
 
     hidden var _strings as Dictionary = {};
     hidden var _probe = null;
+    hidden var _mapProbe = null;
 
     function initialize() {
         DataField.initialize();
@@ -49,6 +51,8 @@ class OpenNavGView extends WatchUi.DataField {
     hidden function startProbe() as Void {
         _probe = new FetchProbe();
         (_probe as FetchProbe).start();
+        _mapProbe = new MapProbe();
+        (_mapProbe as MapProbe).start();
     }
 
     (:release)
@@ -59,6 +63,9 @@ class OpenNavGView extends WatchUi.DataField {
     hidden function probeTick() as Void {
         if (_probe != null) {
             (_probe as FetchProbe).tick();
+        }
+        if (_mapProbe != null) {
+            (_mapProbe as MapProbe).tick();
         }
     }
 
@@ -107,6 +114,17 @@ class OpenNavGView extends WatchUi.DataField {
     }
 
     (:debug)
+    function testProject(lat as Float, lon as Float) as [Float, Float] {
+        project(lat, lon);
+        return [_px, _py];
+    }
+
+    (:debug)
+    function testMap() as StreetMap {
+        return _map;
+    }
+
+    (:debug)
     function testRouteName() as String? {
         var r = _route;
         return (r == null) ? null : r.name;
@@ -147,6 +165,7 @@ class OpenNavGView extends WatchUi.DataField {
         if (_stage > 0) {
             processStage();
         }
+        _map.tick(System.getTimer());
 
         var nav = _nav;
         if (nav != null && state.hasFix && _timerOn) {
@@ -157,6 +176,7 @@ class OpenNavGView extends WatchUi.DataField {
     // ------------------------------------------------------------ route loading
 
     hidden function startRoute() as Void {
+        _map.clear();
         RouteStore.applyPhoneDeletes();
         _mode = Settings.mode();
         _explore = Settings.flag("exploreMode");
@@ -282,12 +302,16 @@ class OpenNavGView extends WatchUi.DataField {
                 }
             }
         } else if (_stage == 3) {
-            RouteStore.save(_pendingSlot, _pendingName, _raw as Array<Float>, _mode);
+            _stage = 0;
+            if (!RouteStore.save(_pendingSlot, _pendingName, _raw as Array<Float>, _mode)) {
+                _raw = null;
+                showError([:StorageFull, :DeleteOnPhone], false);
+                return;
+            }
             Settings.set("activeSlot", _pendingSlot);
             Settings.set("destination", "");
             Settings.set("routeName", "");
             _raw = null;
-            _stage = 0;
             loadSlot(_pendingSlot);
         } else if (_stage == 4) {
             var r = _building as Route;
@@ -297,6 +321,7 @@ class OpenNavGView extends WatchUi.DataField {
                 _building = null;
                 _stage = 0;
                 _phase = PH_ROUTE;
+                _map.prepare(_slot, r, _mode, Settings.get("mapEnabled", true) != false, Settings.str("serverUrl"));
             }
         }
     }
@@ -351,6 +376,7 @@ class OpenNavGView extends WatchUi.DataField {
                 _requested = true;
                 loadSlot(s);
             } else if (row == _pickerSlots.size()) {
+                _map.clear();
                 _route = null;
                 _nav = null;
                 _phase = PH_IDLE;
@@ -465,6 +491,21 @@ class OpenNavGView extends WatchUi.DataField {
         drawMiniRoute(dc, r, w / 2, h * 0.45, w * 0.36);
         Draw.line(dc, h * 0.70, r.name, Graphics.FONT_SMALL, Graphics.COLOR_WHITE);
         Draw.line(dc, h * 0.80, Geo.formatDistance(r.total) + " · " + s(:TapToChange), Graphics.FONT_XTINY, 0xBBBBBB);
+        drawMapStatus(dc, h * 0.89);
+    }
+
+    // Map download progress, so a slow download is not mistaken for an error.
+    hidden function drawMapStatus(dc as Dc, y as Numeric) as Void {
+        var st = _map.status;
+        if (st == _map.ST_LOADING) {
+            Draw.line(dc, y, s(:Map) + " " + _map.done + "/" + _map.total + " · " + s(:KeepPhoneClose), Graphics.FONT_XTINY, Draw.YELLOW);
+        } else if (st == _map.ST_WAIT_PHONE) {
+            Draw.line(dc, y, s(:WaitingPhone), Graphics.FONT_XTINY, Draw.YELLOW);
+        } else if (st == _map.ST_READY) {
+            Draw.line(dc, y, s(:MapReady), Graphics.FONT_XTINY, Draw.GREEN);
+        } else if (st == _map.ST_FULL) {
+            Draw.line(dc, y, s(:MapFull), Graphics.FONT_XTINY, 0xBBBBBB);
+        }
     }
 
     // Whole route, north-up, fitted into a box of size `size` centred at (cx, cy).
@@ -541,6 +582,7 @@ class OpenNavGView extends WatchUi.DataField {
         _tcos = Math.cos(state.heading).toFloat();
         _tcosLat = Math.cos(state.lat).toFloat();
 
+        _map.draw(dc, state.lat, state.lon, _tcx, _tmeY, _tscale, _tsin, _tcos, k, _mode == Settings.MODE_MOTO);
         drawRouteLine(dc, nav);
         if (nav.isOff) {
             drawOffOverlay(dc, nav, k);

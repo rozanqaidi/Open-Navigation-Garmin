@@ -10,6 +10,7 @@ module PipelineTest {
     function reset() as Void {
         for (var s = 1; s <= RouteStore.MAX_SLOTS; s++) {
             Application.Storage.deleteValue(RouteStore.key(s));
+            MapStore.erase(s);
             Settings.set("slot" + s + "Name", "");
             Settings.set("slot" + s + "Delete", false);
         }
@@ -28,7 +29,10 @@ module PipelineTest {
         var name = v.testRouteName();
         logger.debug("phase=" + phase + " name=" + name + " active=" + Settings.get("activeSlot", -1)
             + " slot1=" + Settings.str("slot1Name") + " dest='" + Settings.str("destination") + "'");
-        var ok = phase == v.PH_ROUTE && "CFD Komunitas".equals(name)
+        var map = v.testMap();
+        logger.debug("map status=" + map.status + " points=" + map.total);
+        var ok = phase == v.PH_ROUTE && map.status == map.ST_LOADING && map.total > 0
+            && "CFD Komunitas".equals(name)
             && Settings.get("activeSlot", 0) == 1 && "CFD Komunitas".equals(Settings.str("slot1Name"))
             && Settings.str("destination").length() == 0;
         // A new watch session now loads slot 1 without any code.
