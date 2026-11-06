@@ -23,7 +23,7 @@
     <string id="SetServer">Route server (advanced)</string>
     <string id="RouteReady">Route ready</string>
     <string id="TapToChange">tap to change</string>
-    <string id="GettingRoute">Getting route…</string>
+    <string id="GettingRoute">Getting route...</string>
     <string id="WaitingGps">Waiting for GPS</string>
     <string id="NoConnection">No connection</string>
     <string id="RouteFailed">Route failed</string>
@@ -51,7 +51,8 @@
     <string id="Map">Map</string>
     <string id="NorthLetter">N</string>
     <string id="KeepPhoneClose">keep phone close</string>
-    <string id="WaitingPhone">Map: waiting for phone…</string>
-    <string id="MapReady">Map ready ✓</string>
-    <string id="MapFull">Map memory full: delete a route</string>
+    <string id="WaitingPhone">Waiting for phone</string>
+    <string id="MapReady">Map ready</string>
+    <string id="MapFull">Map memory full</string>
+    <string id="DeleteARoute">delete a route</string>
 </strings>

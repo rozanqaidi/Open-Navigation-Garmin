@@ -18,16 +18,18 @@ module Draw {
 
     // ---------- text ----------
 
-    // Text with a thin black outline that follows the glyphs (≈8% of the font size).
+    // Text with a thin black outline that follows the glyphs (at least 2 px: the
+    // Venu 2 system font is light, 1 px did not separate it from the map lines).
     function haloText(dc as Dc, x as Numeric, y as Numeric, font as Graphics.FontType,
                       text as String, color as Number, justify as Number) as Void {
         var o = (Graphics.getFontHeight(font) * 0.04).toNumber();
-        if (o < 1) {
-            o = 1;
+        if (o < 2) {
+            o = 2;
         }
+        var step = (o + 1) / 2;
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-        for (var dx = -o; dx <= o; dx += o) {
-            for (var dy = -o; dy <= o; dy += o) {
+        for (var dx = -o; dx <= o; dx += step) {
+            for (var dy = -o; dy <= o; dy += step) {
                 if (dx != 0 || dy != 0) {
                     dc.drawText(x + dx, y + dy, font, text, justify);
                 }
@@ -40,9 +42,7 @@ module Draw {
     // Largest font, at most `want`, whose text fits inside the 90% safe circle at row y.
     function fitFont(dc as Dc, text as String, y as Numeric, want as Graphics.FontType) as Graphics.FontType {
         var fonts = FONTS_DOWN;
-        var r = dc.getWidth() / 2.0 * 0.90;
-        var dy = y - dc.getHeight() / 2.0;
-        var chord = (dy.abs() >= r) ? 0 : 2 * Math.sqrt(r * r - dy * dy);
+        var chord = chordAt(dc, y);
         var started = false;
         for (var i = 0; i < fonts.size(); i++) {
             if (fonts[i] == want) {
@@ -67,9 +67,30 @@ module Draw {
         return best;
     }
 
-    // Centred text that always fits the round screen.
+    // Width available for text at row y (90% safe circle).
+    function chordAt(dc as Dc, y as Numeric) as Float {
+        var r = dc.getWidth() / 2.0 * 0.90;
+        var dy = y - dc.getHeight() / 2.0;
+        return ((dy.abs() >= r) ? 0.0 : 2 * Math.sqrt(r * r - dy * dy)).toFloat();
+    }
+
+    // How many texts did not fit even in the smallest font (tests check this stays 0).
+    var overflows as Number = 0;
+
+    // Centred text that always fits the round screen. If even the smallest
+    // font is too wide (e.g. a long route name), the end is cut to "..."
+    // instead of running off the round edge.
     function line(dc as Dc, y as Numeric, text as String, want as Graphics.FontType, color as Number) as Void {
         var f = fitFont(dc, text, y, want);
+        var chord = chordAt(dc, y);
+        if (dc.getTextWidthInPixels(text, f) > chord) {
+            overflows++;
+            var n = text.length();
+            while (n > 1 && dc.getTextWidthInPixels(text.substring(0, n) + "...", f) > chord) {
+                n--;
+            }
+            text = text.substring(0, n) + "...";
+        }
         haloText(dc, dc.getWidth() / 2, y, f, text, color,
                  Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }

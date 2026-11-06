@@ -39,14 +39,15 @@ module Geo {
         return r.toFloat();
     }
 
-    // "850 m", "1.2 km", "12 km"
+    // "850 m", "1.2 km", "10.5 km", "123 km"
     function formatDistance(m as Numeric) as String {
         if (m < 1000) {
             var rounded = (m < 100) ? m.toNumber() : ((m / 10).toNumber() * 10);
             return rounded.format("%d") + " m";
         }
-        if (m < 10000) {
-            return (m / 1000.0).format("%.1f") + " km";
+        if (m < 100000) {
+            // Rounded down to 0.1 km, like metres are rounded down to 10 m.
+            return ((m / 100).toNumber() / 10.0).format("%.1f") + " km";
         }
         return (m / 1000.0).format("%d") + " km";
     }
@@ -86,6 +87,8 @@ module Geo {
         return formatDistance(42).equals("42 m")
             && formatDistance(857).equals("850 m")
             && formatDistance(1234).equals("1.2 km")
-            && formatDistance(15400).equals("15 km");
+            && formatDistance(10560).equals("10.5 km")
+            && formatDistance(15400).equals("15.4 km")
+            && formatDistance(123400).equals("123 km");
     }
 }

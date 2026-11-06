@@ -29,6 +29,8 @@ class OpenNavGView extends WatchUi.DataField {
     hidden var _errRetry as Boolean = false;
     hidden var _fetcher as RouteFetcher?;
     hidden var _map as StreetMap = new StreetMap();
+    hidden var _elapsed as Float = 0.0;       // activity distance (m)
+    hidden var _arrivedDist as Float = 0.0;   // activity distance when we arrived
 
     // Route processing is split over several compute() calls to stay under the watchdog.
     hidden var _stage as Number = 0;
@@ -114,6 +116,18 @@ class OpenNavGView extends WatchUi.DataField {
     }
 
     (:debug)
+    function testError(lines as Array<Symbol>, retry as Boolean) as Void {
+        _requested = true;
+        _picker = false;
+        showError(lines, retry);
+    }
+
+    (:debug)
+    function testMode(m as Number) as Void {
+        _mode = m;
+    }
+
+    (:debug)
     function testMap() as StreetMap {
         return _map;
     }
@@ -134,6 +148,10 @@ class OpenNavGView extends WatchUi.DataField {
     function compute(info as Activity.Info) as Void {
         var ts = info.timerState;
         _timerOn = (ts != null && ts != Activity.TIMER_STATE_OFF);
+        var ed = info.elapsedDistance;
+        if (ed != null) {
+            _elapsed = ed.toFloat();
+        }
 
         var loc = info.currentLocation;
         var quality = info.currentLocationAccuracy;
@@ -163,7 +181,11 @@ class OpenNavGView extends WatchUi.DataField {
 
         var nav = _nav;
         if (nav != null && state.hasFix && _timerOn) {
-            handleEvent(nav.update(state.lat, state.lon, state.speed, System.getTimer()));
+            var ev = nav.update(state.lat, state.lon, state.speed, System.getTimer());
+            if (ev == nav.EV_ARRIVED) {
+                _arrivedDist = _elapsed;
+            }
+            handleEvent(ev);
         }
     }
 
@@ -360,9 +382,11 @@ class OpenNavGView extends WatchUi.DataField {
 
     function handleTap(x as Number, y as Number) as Boolean {
         if (_picker) {
-            var h = 416.0;
-            var step = h * 0.105;
-            var row = ((y - (h * 0.30 - step / 2)) / step).toNumber();
+            var h = System.getDeviceSettings().screenHeight.toFloat();
+            var g = pickerGeom(h);
+            var step = g[1];
+            var row = ((y - (g[0] - step / 2)) / step).toFloat();
+            row = (row < 0) ? -1 : row.toNumber();
             if (row >= 0 && row < _pickerSlots.size()) {
                 var s = _pickerSlots[row];
                 Settings.set("activeSlot", s);
@@ -439,6 +463,7 @@ class OpenNavGView extends WatchUi.DataField {
         } else {
             Draw.arrow(dc, w / 2, h / 2, w * 0.22, state.relativeBearingToStart());
         }
+        Draw.north(dc, w * 0.82, h * 0.36, w / 200.0, -state.heading, s(:NorthLetter).equals("N"));
         Draw.line(dc, h * 0.80, Geo.formatDistance(state.distanceToStart()), Graphics.FONT_LARGE, Graphics.COLOR_WHITE);
     }
 
@@ -454,13 +479,26 @@ class OpenNavGView extends WatchUi.DataField {
         }
     }
 
+    // [first row centre y, row height]. Rows share the space between 27% and 88%
+    // of the screen, so 2 routes get big rows and 5 routes still fit (max 17%).
+    hidden function pickerGeom(h as Float) as [Float, Float] {
+        var rows = _pickerSlots.size() + 1;
+        var step = h * 0.61 / rows;
+        if (step > h * 0.17) {
+            step = h * 0.17;
+        }
+        var top = h * 0.575 - step * (rows - 1) / 2.0;
+        return [top.toFloat(), step.toFloat()];
+    }
+
     hidden function drawPicker(dc as Dc) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
-        Draw.line(dc, h * 0.19, s(:ChooseRoute), Graphics.FONT_SMALL, 0xBBBBBB);
-        var step = h * 0.105;
+        Draw.line(dc, h * 0.17, s(:ChooseRoute), Graphics.FONT_SMALL, 0xBBBBBB);
+        var g = pickerGeom(h.toFloat());
+        var step = g[1];
         for (var i = 0; i <= _pickerSlots.size(); i++) {
-            var y = h * 0.30 + i * step;
+            var y = g[0] + i * step;
             var label;
             if (i < _pickerSlots.size()) {
                 var d = RouteStore.load(_pickerSlots[i]);
@@ -480,24 +518,29 @@ class OpenNavGView extends WatchUi.DataField {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var r = _route as Route;
-        Draw.line(dc, h * 0.20, s(:RouteReady), Graphics.FONT_SMALL, Draw.GREEN);
-        drawMiniRoute(dc, r, w / 2, h * 0.45, w * 0.36);
-        Draw.line(dc, h * 0.70, r.name, Graphics.FONT_SMALL, Graphics.COLOR_WHITE);
-        Draw.line(dc, h * 0.80, Geo.formatDistance(r.total) + " · " + s(:TapToChange), Graphics.FONT_XTINY, 0xBBBBBB);
-        drawMapStatus(dc, h * 0.89);
+        Draw.line(dc, h * 0.17, s(:RouteReady), Graphics.FONT_SMALL, Draw.GREEN);
+        drawMiniRoute(dc, r, w / 2, h * 0.39, w * 0.30);
+        Draw.line(dc, h * 0.61, r.name, Graphics.FONT_SMALL, Graphics.COLOR_WHITE);
+        Draw.line(dc, h * 0.70, Geo.formatDistance(r.total) + " · " + s(:TapToChange), Graphics.FONT_XTINY, 0xBBBBBB);
+        drawMapStatus(dc, h * 0.79, h * 0.87);
     }
 
     // Map download progress, so a slow download is not mistaken for an error.
-    hidden function drawMapStatus(dc as Dc, y as Numeric) as Void {
+    // Two short lines: the round screen is too narrow near the bottom for one long one.
+    hidden function drawMapStatus(dc as Dc, y1 as Numeric, y2 as Numeric) as Void {
         var st = _map.status;
+        var progress = s(:Map) + " " + _map.done + "/" + _map.total;
         if (st == _map.ST_LOADING) {
-            Draw.line(dc, y, s(:Map) + " " + _map.done + "/" + _map.total + " · " + s(:KeepPhoneClose), Graphics.FONT_XTINY, Draw.YELLOW);
+            Draw.line(dc, y1, progress, Graphics.FONT_XTINY, Draw.YELLOW);
+            Draw.line(dc, y2, s(:KeepPhoneClose), Graphics.FONT_XTINY, 0xBBBBBB);
         } else if (st == _map.ST_WAIT_PHONE) {
-            Draw.line(dc, y, s(:WaitingPhone), Graphics.FONT_XTINY, Draw.YELLOW);
+            Draw.line(dc, y1, s(:WaitingPhone), Graphics.FONT_XTINY, Draw.YELLOW);
+            Draw.line(dc, y2, progress, Graphics.FONT_XTINY, 0xBBBBBB);
         } else if (st == _map.ST_READY) {
-            Draw.line(dc, y, s(:MapReady), Graphics.FONT_XTINY, Draw.GREEN);
+            Draw.line(dc, y1, s(:MapReady), Graphics.FONT_XTINY, Draw.GREEN);
         } else if (st == _map.ST_FULL) {
-            Draw.line(dc, y, s(:MapFull), Graphics.FONT_XTINY, 0xBBBBBB);
+            Draw.line(dc, y1, s(:MapFull), Graphics.FONT_XTINY, 0xBBBBBB);
+            Draw.line(dc, y2, s(:DeleteARoute), Graphics.FONT_XTINY, 0xBBBBBB);
         }
     }
 
@@ -540,7 +583,9 @@ class OpenNavGView extends WatchUi.DataField {
         var k = w / 200.0;
         Draw.pin(dc, w / 2, h * 0.20, k * 1.3);
         Draw.line(dc, h * 0.45, s(:Arrived), Graphics.FONT_LARGE, Draw.GREEN);
-        Draw.line(dc, h * 0.58, Geo.formatDistance(nav.route.total), Graphics.FONT_MEDIUM, Graphics.COLOR_WHITE);
+        // Distance actually covered (the activity's own number); route length only if unknown.
+        var dist = (_arrivedDist > 0) ? _arrivedDist : nav.route.total;
+        Draw.line(dc, h * 0.58, Geo.formatDistance(dist), Graphics.FONT_MEDIUM, Graphics.COLOR_WHITE);
         Draw.line(dc, h * 0.70, s(:SavedInSlot) + " " + _slot, Graphics.FONT_XTINY, 0xBBBBBB);
     }
 
@@ -604,13 +649,24 @@ class OpenNavGView extends WatchUi.DataField {
         var to = nav.seg + 400;
         if (to > r.n - 1) { to = r.n - 1; }
         dc.setPenWidth(10);
+        // Our progress point: the segment we are on turns grey up to here.
+        project(nav.snapLat, nav.snapLon);
+        var sx = _px;
+        var sy = _py;
         var lx = 0.0;
         var ly = 0.0;
         for (var i = from; i <= to; i++) {
             project(r.lat(i), r.lon(i));
             if (i > from && (_px.abs() < lim || lx.abs() < lim) && (_py.abs() < lim || ly.abs() < lim)) {
-                dc.setColor(i <= nav.seg ? Draw.GREY : Draw.BLUE, Graphics.COLOR_TRANSPARENT);
-                dc.drawLine(lx, ly, _px, _py);
+                if (i == nav.seg + 1) {
+                    dc.setColor(Draw.GREY, Graphics.COLOR_TRANSPARENT);
+                    dc.drawLine(lx, ly, sx, sy);
+                    dc.setColor(Draw.BLUE, Graphics.COLOR_TRANSPARENT);
+                    dc.drawLine(sx, sy, _px, _py);
+                } else {
+                    dc.setColor(i <= nav.seg ? Draw.GREY : Draw.BLUE, Graphics.COLOR_TRANSPARENT);
+                    dc.drawLine(lx, ly, _px, _py);
+                }
             }
             lx = _px;
             ly = _py;
@@ -638,10 +694,10 @@ class OpenNavGView extends WatchUi.DataField {
     hidden function drawBackHeader(dc as Dc, k as Float) as Void {
         var text = s(:BackOnRoute);
         var f = Draw.fitFont(dc, text, 36 * k, Graphics.FONT_SMALL);
-        var total = 16 * k + dc.getTextWidthInPixels(text, f);
+        var total = 20 * k + dc.getTextWidthInPixels(text, f);
         var x0 = dc.getWidth() / 2 - total / 2;
         Draw.check(dc, x0, 28 * k, k, Draw.GREEN);
-        Draw.haloText(dc, x0 + 16 * k, 36 * k, f, text, Draw.GREEN,
+        Draw.haloText(dc, x0 + 20 * k, 36 * k, f, text, Draw.GREEN,
                       Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 

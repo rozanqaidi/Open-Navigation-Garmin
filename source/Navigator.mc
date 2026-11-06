@@ -16,6 +16,7 @@ class Navigator {
     const ARRIVE_M = 25.0;
     const TRAIL_STEP_M = 5.0;
     const TRAIL_MAX = 120;
+    const LEAVE_M = 10.0;       // the trail starts once we are this far from the line
 
     var route as Route;
     var mode as Number;
@@ -34,17 +35,27 @@ class Navigator {
     var arrived as Boolean = false;
     var trail as Array<Float> = [] as Array<Float>;   // flat lat/lon while off route
     var backUntilMs as Number = 0;      // show "back on route" until this time
+    var snapLat as Float = 0.0;         // our progress point on the route line
+    var snapLon as Float = 0.0;
 
     hidden var _offSinceMs as Number? = null;
     hidden var _onSinceMs as Number? = null;
     hidden var _vibedTurn as Number = -1;
     hidden var _rejoinSeg as Number = 0;
     hidden var _located as Boolean = false;
+    // Route point where we last were on the route, so the trail starts there.
+    hidden var _leaveLat as Float = 0.0;
+    hidden var _leaveLon as Float = 0.0;
+    hidden var _leaving as Boolean = false;
 
     function initialize(r as Route, navMode as Number) {
         route = r;
         mode = navMode;
         remaining = r.total;
+        snapLat = r.lat(0);
+        snapLon = r.lon(0);
+        _leaveLat = snapLat;
+        _leaveLon = snapLon;
     }
 
     function offThresholdM() as Float {
@@ -103,7 +114,6 @@ class Navigator {
             }
             if (!isOff && nowMs - (_offSinceMs as Number) >= OFF_HOLD_MS) {
                 isOff = true;
-                trail = [] as Array<Float>;
                 event = EV_OFF_ROUTE;
             }
         } else {
@@ -114,6 +124,7 @@ class Navigator {
                 }
                 if (nowMs - (_onSinceMs as Number) >= BACK_HOLD_MS) {
                     isOff = false;
+                    _leaving = false;
                     trail = [] as Array<Float>;
                     backUntilMs = nowMs + 3000;
                     event = EV_BACK_ON_ROUTE;
@@ -121,7 +132,19 @@ class Navigator {
             }
         }
 
-        if (isOff || _offSinceMs != null) {
+        // Trail: from the route point where we left (as soon as we are LEAVE_M
+        // from the line), so the green dots join the route without a gap.
+        if (!isOff) {
+            if (d <= LEAVE_M) {
+                _leaveLat = best[2] as Float;
+                _leaveLon = best[3] as Float;
+                _leaving = false;
+            } else if (!_leaving) {
+                _leaving = true;
+                trail = [_leaveLat, _leaveLon] as Array<Float>;
+            }
+        }
+        if (isOff || _leaving) {
             addTrail(lat, lon);
         }
 
@@ -141,6 +164,8 @@ class Navigator {
             if (newAlong >= along - 30.0 || event == EV_BACK_ON_ROUTE) {
                 seg = best[0] as Number;
                 along = newAlong;
+                snapLat = best[2] as Float;
+                snapLon = best[3] as Float;
             }
         }
 

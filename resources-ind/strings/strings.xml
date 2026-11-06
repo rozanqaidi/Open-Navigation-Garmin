@@ -23,7 +23,7 @@
     <string id="SetServer">Server rute (lanjutan)</string>
     <string id="RouteReady">Rute siap</string>
     <string id="TapToChange">tap untuk ganti</string>
-    <string id="GettingRoute">Mengambil rute…</string>
+    <string id="GettingRoute">Mengambil rute...</string>
     <string id="WaitingGps">Menunggu GPS</string>
     <string id="NoConnection">Tidak ada koneksi</string>
     <string id="RouteFailed">Gagal ambil rute</string>
@@ -51,7 +51,8 @@
     <string id="Map">Peta</string>
     <string id="NorthLetter">U</string>
     <string id="KeepPhoneClose">dekatkan HP</string>
-    <string id="WaitingPhone">Peta: menunggu HP…</string>
-    <string id="MapReady">Peta siap ✓</string>
-    <string id="MapFull">Memori peta penuh: hapus rute</string>
+    <string id="WaitingPhone">Menunggu HP</string>
+    <string id="MapReady">Peta siap</string>
+    <string id="MapFull">Memori peta penuh</string>
+    <string id="DeleteARoute">hapus satu rute</string>
 </strings>

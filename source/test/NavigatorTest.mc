@@ -159,4 +159,44 @@ module NavigatorTest {
         return line == RouteCode.KIND_LINE && via == RouteCode.KIND_VIA && none == RouteCode.KIND_NONE
             && pts != null && Polyline.count(pts) == 3;
     }
+
+    // A bend just before the finish is not announced: the finish flag takes over.
+    (:test)
+    function bendAtFinishIsDropped(logger as Logger) as Boolean {
+        var pts = [] as Array<Float>;
+        var c = [[0, 0], [300, 0], [300, 22]];
+        for (var k = 0; k < c.size(); k++) {
+            var q = p(c[k][0], c[k][1]);
+            pts.add(q[0]);
+            pts.add(q[1]);
+        }
+        var r = new Route("end", pts, false);
+        var nav = new Navigator(r, Settings.MODE_RUN);
+        nav.update(p(100, 0)[0], p(100, 0)[1], 3.0, 0);
+        logger.debug("turns=" + r.turnType.size() + " header=" + nav.headerType());
+        return r.turnType.size() == 0 && nav.headerType() == r.FINISH;
+    }
+
+    // The green trail starts on the route where we left it, not 40 m away.
+    (:test)
+    function trailStartsOnRoute(logger as Logger) as Boolean {
+        var nav = new Navigator(sampleRoute(), Settings.MODE_RUN);
+        var t = 0;
+        for (var m = 0; m <= 150; m += 3) {
+            nav.update(p(m, 0)[0], p(m, 0)[1], 3.0, t);
+            t += 1000;
+        }
+        // walk away east, 4 m per second, until the off-route alarm
+        for (var e = 4; e <= 120; e += 4) {
+            nav.update(p(150, e)[0], p(150, e)[1], 3.0, t);
+            t += 1000;
+        }
+        var tr = nav.trail;
+        var d0 = Geo.distance(tr[0], tr[1], p(150, 0)[0], p(150, 0)[1]);
+        logger.debug("off=" + nav.isOff + " pts=" + tr.size() / 2 + " firstFromRoute=" + d0);
+        // second dot must be close to the route too (no 40 m gap)
+        var d1 = Geo.distance(tr[2], tr[3], p(150, 0)[0], p(150, 0)[1]);
+        logger.debug("secondFromRoute=" + d1);
+        return nav.isOff && d0 < 5.0 && d1 < 16.0 && tr.size() >= 10;
+    }
 }

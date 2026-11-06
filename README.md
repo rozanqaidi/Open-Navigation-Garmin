@@ -4,6 +4,10 @@
 
 Open NavG is a free, open-source **Connect IQ data field** that adds route navigation to watches without maps, starting with the **Garmin Venu 2**. It runs inside the normal Run / Bike activity, so all of Garmin's own recording keeps working.
 
+![Open NavG on a Garmin Venu 2: route ready, approaching a turn, off route with the way back, back on route, riding a motorbike, arrived](docs/images/open-navg-venu2.png)
+
+*Route ready · approaching a turn · off route, red line back to the route · back on route · riding a motorbike · arrived. Drawn from the app's own drawing code with the Venu 2 system font, shown in the Connect IQ simulator's Venu 2 image. Map data © OpenStreetMap contributors.*
+
 ## Why this exists
 Many Garmin watches, especially older or lifestyle models like the Venu 2, have **no course navigation at all**, and even cheaper current models only give a line to follow without telling you how to get back. Real turn guidance with maps and rerouting is reserved for watches that cost two to three times more. Open NavG gives a watch you already own:
 - turn arrows with distance and one vibration before each turn,
@@ -76,6 +80,10 @@ MIT — see [LICENSE](LICENSE).
 # Open NavG — navigasi belokan gratis untuk Garmin Venu 2
 
 Open NavG adalah **data field Connect IQ** gratis dan open-source yang menambahkan navigasi rute ke jam tanpa peta, dimulai dari **Garmin Venu 2**. Berjalan di dalam aktivitas Run/Bike biasa, jadi semua perekaman bawaan Garmin tetap jalan.
+
+![Open NavG di Garmin Venu 2](docs/images/open-navg-venu2.png)
+
+*Rute siap · mendekati belokan · keluar jalur dengan garis merah kembali ke rute · kembali di jalur · riding motorbike · sampai. Digambar dari kode gambar aplikasi dengan huruf asli Venu 2, ditampilkan di gambar Venu 2 dari simulator Connect IQ. Data peta © kontributor OpenStreetMap.*
 
 **Kenapa dibuat:** banyak jam Garmin, terutama seri lama atau seri gaya hidup seperti Venu 2, **sama sekali tidak punya navigasi rute**. Seri yang lebih murah pun umumnya hanya memberi garis tanpa petunjuk jalan kembali. Navigasi lengkap dengan peta dan rute ulang hanya ada di jam yang harganya dua sampai tiga kali lipat. Open NavG memberi jam yang sudah Anda punya: panah belokan dengan jarak, satu getar sebelum belok, garis untuk kembali ke rute, mode riding motorbike tanpa tol, dan bisa diisi rute dari **iPhone**. Tanpa beli jam baru dan tanpa langganan.
 

@@ -15,6 +15,8 @@ class Route {
     const UTURN_MIN_DEG = 150.0;
     const LOOK_M = 15.0;            // look this far back/ahead to measure a bend
     const MERGE_M = 25.0;           // bends closer than this count as one turn
+    const END_M = 40.0;             // a bend this close to the finish is not announced:
+                                    // the finish flag (and "Arrived" at 25 m) takes over
 
     var name as String;
     var pts as Array<Float>;        // flat lat/lon radians
@@ -63,6 +65,14 @@ class Route {
             work += 3;
         }
         ready = (_ti >= n - 1);
+        if (ready) {
+            while (turnAlong.size() > 0 && turnAlong[turnAlong.size() - 1] > total - END_M) {
+                var last = turnAlong.size() - 1;
+                turnAlong = turnAlong.slice(0, last);
+                turnType = turnType.slice(0, last);
+                turnIdx = turnIdx.slice(0, last);
+            }
+        }
         return ready;
     }
 
